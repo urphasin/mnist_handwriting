@@ -6,19 +6,27 @@ using namespace std;
 
 int main() {
 
-    int N = 3;
+    int data[] = {  1000000000,
+                    1000000001,
+                    1000000002,
+                    1000000003,
+                    1000000004,
+                    1000000005,
+                    1000000006,
+                    1000000007,
+                    1000000008,
+                    1000000009};
 
-    // cout << "The square of " << N << " is " << square(N) << endl;
-    // cout << "The cube of " << N << " is " << cube(N) << endl;
+    FILE *file;
 
-    int num = 0x12345678;
-    char *ptr = (char*)&num;
+    file = fopen("file.bin", "wb");//
 
-    if (*ptr == 0x12) {
-        std::cout << "Big-endian\n";
-    } else {
-        std::cout << "Little-endian\n";
+    if(!file) {
+        printf("Error opening file.\n");
+        return 1;
     }
+    fwrite(data, sizeof(data), 1, file);
 
+    fclose(file);
     return 0;
 }
