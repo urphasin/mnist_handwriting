@@ -54,7 +54,7 @@ void data_handler::read_feature_vector(std::string path)
 void data_handler::read_feature_labels(std::string path)
 {
     uint32_t header[2]; // |MAGIC|NUM IMAGES|ROW_SIZE|COLUMN_SIZE
-    unsigned char bytes[2];
+    unsigned char bytes[4];
     FILE *f = fopen(path.c_str(), "r");
     
     if(f)
@@ -79,7 +79,7 @@ void data_handler::read_feature_labels(std::string path)
                 exit(1);
             }
         }
-        printf("Successfully read and stored label.\n", (*data_array).size());
+        printf("Successfully read and stored %lu label.\n", (*data_array).size());
     }
     else
     {
@@ -140,10 +140,49 @@ void data_handler::split_data()
     printf("Test Data Size: %lu.\n", test_data->size());
     printf("Validation Data Size: %lu.\n", validation_data->size());
 }
-void data_handler::count_classes();
+void data_handler::count_classes()
+{
+    int count = 0;
+    for (unsigned int i = 0; i < (*data_array).size(); i++)
+    {
+        if(class_map.find(data_array->at(i)->get_label()) == class_map.end())
+        {
+            class_map[(*(*data_array).at(i)).get_label()] = count;
+            data_array->at(i)->set_enumerated_label(count);
+            count++;
+        }
+    }
+    num_classes = count;
+    printf("Successfully Extracted %d Unique Classes.\n", num_classes);
+}
 
-uint32_t data_handler::convert_to_little_endian(const unsigned char* bytes);
+uint32_t data_handler::convert_to_little_endian(const unsigned char* bytes)
+{
+    return ((uint32_t)bytes[0] << 24 | 
+            (uint32_t)bytes[1] << 16 | 
+            (uint32_t)bytes[2] << 8  | 
+            (uint32_t)bytes[3] << 0);
+}
 
-std::vector<data *> *data_handler::get_training_data();
-std::vector<data *> *data_handler::get_test_data();
-std::vector<data *> *data_handler::get_validation_data();
+std::vector<data *> *data_handler::get_training_data()
+{
+    return training_data;
+}
+std::vector<data *> *data_handler::get_test_data()
+{
+    return test_data;
+}
+std::vector<data *> *data_handler::get_validation_data()
+{
+    return validation_data;
+}
+
+
+int main()
+{
+    data_handler *dh = new data_handler();
+    dh->read_feature_vector("../File/train-images.idx3-ubyte");
+    dh->read_feature_labels("../File/train-labels.idx1-ubyte");
+    dh->split_data();
+    dh->count_classes();
+}
